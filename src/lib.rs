@@ -1,4 +1,9 @@
 //use std::vec;
+#![warn(clippy::all, rust_2018_idioms)]
+
+mod app;
+pub use app::TemplateApp;
+
 
 pub struct AllowedSymbols {
     pub lower: bool,
@@ -8,7 +13,7 @@ pub struct AllowedSymbols {
 }
 
 // Generate an alphanumeric password of the length
-pub fn generate_password(length: u32, allowed_symbols: AllowedSymbols) -> String {
+pub fn generate_password(length: u32, allowed_symbols: &AllowedSymbols) -> String {
     use rand::Rng; // Random Number Generator
 
     let alpha_lower: &str       = "abcdefghijklmnopqrstuvwxyz";
@@ -34,13 +39,15 @@ pub fn generate_password(length: u32, allowed_symbols: AllowedSymbols) -> String
     }
 
     let mut password: String = String::new();
-    let mut rng = rand::thread_rng();
-    let char_idx_max = chars.len() - 1;
-    for _i in 0..length {
-        let idx: usize = rng.gen_range(0..char_idx_max);    // get random int 
-        let new_byte: u8 = chars.as_bytes()[idx];           // get bytees from the charset at the index
-        let new_char: char = new_byte as char;              // convert bytes to char
-        password.push(new_char);                        // append it to the password
+    if chars.len() > 0 {
+        let mut rng = rand::thread_rng();
+        let char_idx_max = chars.len() - 1;
+        for _i in 0..length {
+            let idx: usize = rng.gen_range(0..char_idx_max);    // get random int 
+            let new_byte: u8 = chars.as_bytes()[idx];           // get bytees from the charset at the index
+            let new_char: char = new_byte as char;              // convert bytes to char
+            password.push(new_char);                        // append it to the password
+        }
     }
 
     return password;

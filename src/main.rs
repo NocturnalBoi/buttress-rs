@@ -1,3 +1,30 @@
+#![warn(clippy::all, rust_2018_idioms)]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
+
+// When compiling natively:
+#[cfg(not(target_arch = "wasm32"))]
+fn main() -> eframe::Result<()> {
+    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
+
+    let native_options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([500.0, 400.0])
+            .with_min_inner_size([300.0, 220.0])
+            .with_icon(
+                // NOTE: Adding an icon is optional
+                eframe::icon_data::from_png_bytes(&include_bytes!("../assets/icon-256.png")[..])
+                    .expect("Failed to load icon"),
+            ),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "Buttress",
+        native_options,
+        Box::new(|cc| Box::new(buttress::TemplateApp::new(cc))),
+    )
+}
+
+/* 
 //use anyhow::{Context, Result}; // Error handling
 use clap::Parser; // Parse the CLI args
 use std::io::stdin;
@@ -42,59 +69,4 @@ fn main() {
         println!("Here's your new password: {}", password);
     } 
 }
-
-
-
-
-/* 
-fn main() {
-    let args = Cli::parse();
-    
-    let content = std::fs::read_to_string(&args.path).expect("could not read file");
-
-    for line in content.lines() {
-        if line.contains(&args.pattern) {
-            println!("{}", line);
-        }
-    }
-    
-    //println!("pattern: {:?}, path: {:?}", args.pattern, args.path)
-}
 */
-
-/* 
-fn old_main() {
-    use std::io::{stdin};
-    use rand::{distributions::Alphanumeric, Rng}; // 0.8
-
-    println!("Enter desired length of the password...");
-    let mut input = String::new();
-    stdin().read_line(&mut input).expect("Did not enter a correct string");
-    
-    let psw_len = input.trim().parse::<u32>().unwrap_or(0);
-    println!("Entered a number: {}", psw_len);
-
-    if psw_len > 0 {
-        let str_len = psw_len.try_into().unwrap(); // convert u32 to usize
-        let password: String = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(str_len)
-        .map(char::from)
-        .collect();
-
-        println!("Here's your new password: {}", password);
-    }
-}
-*/
-
-//fn request_input() -> i32 {
-    //use std::io::{stdin};
-    //let mut input = String::new();
-    //stdin().read_line(&mut input).expect("Did not enter a correct string");
-    ////let length: u32 = input.parse().unwrap();
-//
-    //match input.parse::<u32>() {
-    //    Ok(n) => return input.parse::<u32>(),
-    //    Err(e) => return -1,
-    //}
-//}

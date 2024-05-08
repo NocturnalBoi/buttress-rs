@@ -122,6 +122,7 @@ impl eframe::App for TemplateApp {
                 };
             });
 
+            ui.add_space(5.0);
             ui.horizontal(|ui| {
                 if ui.checkbox(&mut self.allowed_chars.numbers, "Numbers")
                     .changed() {
@@ -142,10 +143,7 @@ impl eframe::App for TemplateApp {
                 egui::widgets::global_dark_light_mode_buttons(ui);
                 egui::warn_if_debug_build(ui);
                 ui.add_space(window_width - 210.0);
-                ui.add(egui::github_link_file!(
-                    "https://github.com/NocturnalBoi/buttress-rs.git",
-                    "Source code"
-                ));
+                ui.hyperlink_to("Source code", "https://github.com/NocturnalBoi/buttress-rs");
             });
         });
     }

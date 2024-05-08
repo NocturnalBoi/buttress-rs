@@ -1,6 +1,8 @@
-# buttress-rs
- Simple password generator written in Rust
+## buttress-rs
+Simple password generator written in Rust using egui and eframe
 
-# Dependencies
--clap
--rand
+## Dependencies
+* egui - makes the GUI possible
+* eframe - creates app windows
+* rand - generates random numbers and symbols
+* log - log stuff

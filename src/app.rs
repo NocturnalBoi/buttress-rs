@@ -2,7 +2,6 @@
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp {
-    // Example stuff:
     label: String,
     password_length: i32,
     password: String,
@@ -14,7 +13,6 @@ pub struct TemplateApp {
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            // Example stuff:
             label: "Hello World!".to_owned(),
             password_length: 50,
             password: String::new(),
@@ -31,28 +29,6 @@ impl Default for TemplateApp {
 impl TemplateApp {
     /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        // This is also where you can customize the look and feel of egui using
-        // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
-        
-        //use egui::FontFamily::Proportional;
-        //use egui::FontId;
-        //use egui::TextStyle::*;
-
-        let mut style = (*cc.egui_ctx.style()).clone();
-        /*
-        style.text_styles = [
-            (Heading, FontId::new(30.0, Proportional)),
-            (Name("Heading2".into()), FontId::new(25.0, Proportional)),
-            (Name("Context".into()), FontId::new(20.0, Proportional)),
-            (Body, FontId::new(18.0, Proportional)),
-            (Monospace, FontId::new(14.0, Proportional)),
-            (Button, FontId::new(14.0, Proportional)),
-            (Small, FontId::new(10.0, Proportional)),
-            ].into();
-        */
-        style.spacing.slider_width = 200.0;
-        cc.egui_ctx.set_style(style);
-
         // Load previous app state (if any).
         // Note that you must enable the `persistence` feature for this to work.
         if let Some(storage) = cc.storage {
@@ -88,8 +64,6 @@ impl eframe::App for TemplateApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.style_mut().spacing.slider_width = window_width - 80.0;
 
-            // The central panel the region left after adding TopPanel's and SidePanel's
-            //ui.heading(&mut self.password);
             ui.horizontal(|ui| {
                 ui.label( "Password");
                 ui.add_space(window_width - 150.0);
@@ -163,17 +137,13 @@ impl eframe::App for TemplateApp {
             });
         });
 
-         // Put your widgets into a `SidePanel`, `TopBottomPanel`, `CentralPanel`, `Window` or `Area`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
         egui::TopBottomPanel::bottom("bot_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
             egui::menu::bar(ui, |ui| {
                 egui::widgets::global_dark_light_mode_buttons(ui);
-                //ui.add_space(20.0);
                 egui::warn_if_debug_build(ui);
                 ui.add_space(window_width - 210.0);
                 ui.add(egui::github_link_file!(
-                    "https://github.com/emilk/eframe_template/blob/main/",
+                    "https://github.com/NocturnalBoi/buttress-rs.git",
                     "Source code"
                 ));
             });

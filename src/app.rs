@@ -16,7 +16,7 @@ impl Default for TemplateApp {
         Self {
             // Example stuff:
             label: "Hello World!".to_owned(),
-            password_length: 10,
+            password_length: 50,
             password: String::new(),
             allowed_chars: crate::AllowedSymbols {
                 lower: true,
@@ -63,10 +63,12 @@ impl TemplateApp {
     }
 }
 
-fn selectable_text(ui: &mut egui::Ui, mut text: &str) {
+fn selectable_text(ui: &mut egui::Ui, mut text: &str, text_color: egui::Color32) {
     ui.add(egui::TextEdit::multiline(&mut text)
         .clip_text(false)
         .desired_width(f32::INFINITY)
+        .desired_rows(5)
+        .text_color(text_color)
     );
 }
 
@@ -78,102 +80,103 @@ impl eframe::App for TemplateApp {
 
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Put your widgets into a `SidePanel`, `TopBottomPanel`, `CentralPanel`, `Window` or `Area`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
-
-            egui::menu::bar(ui, |ui| {
-                // NOTE: no File->Quit on web pages!
-                let is_web = cfg!(target_arch = "wasm32");
-                if !is_web {
-                    ui.menu_button("File", |ui| {
-                        if ui.button("Quit").clicked() {
-                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                        }
-                    });
-                    ui.add_space(16.0);
-                }
-
-                egui::widgets::global_dark_light_mode_buttons(ui);
-            });
-        });
-
         let mut window_width = 0.0;
         if let Some(rect) = ctx.input(|i| i.viewport().outer_rect) {
             window_width = rect.max.x - rect.min.x;
         }
 
-
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.style_mut().spacing.slider_width = window_width - 30.0;
+            ui.style_mut().spacing.slider_width = window_width - 80.0;
 
             // The central panel the region left after adding TopPanel's and SidePanel's
-            ui.heading("Buttress - Password Generator");
+            //ui.heading(&mut self.password);
+            ui.horizontal(|ui| {
+                ui.label( "Password");
+                ui.add_space(window_width - 150.0);
+                if ui.button("🔄")
+                    .on_hover_text("Generate new password")
+                    .clicked() {
+                        self.password = crate::generate_password(self.password_length.try_into().unwrap(), &self.allowed_chars);
+                };
+        
+                if ui.button("💾")
+                    .on_hover_text("Copy to clipboard")
+                    .clicked() {
+                        ui.output_mut(|o| o.copied_text = self.password.to_string());
+                };
+            });
+
+            ui.add_space(10.0);
+
+            let mut password_color: egui::Color32 = egui::Color32::DARK_RED;
+            if self.password_length > 8 {
+                password_color = egui::Color32::from_rgb(144, 144, 0);
+            }
+
+            if self.password_length > 16 {
+                password_color = egui::Color32::DARK_GREEN;
+            } 
+
+            selectable_text(ui, &mut self.password, password_color);
+            ui.separator();
             
             ui.add_space(20.0);
             ui.horizontal(|ui| {
                 ui.label( "Password Length:");
-                ui.label( self.password_length.to_string());
             });
-
-            ui.add(egui::Slider::new(&mut self.password_length, 0..=100).show_value(false));
+            
+            let slider_response = ui.add(egui::Slider::new(&mut self.password_length, 0..=100)
+                .show_value(true)
+            );
+            
+            if slider_response.changed() == true {
+                self.password = crate::generate_password(self.password_length.try_into().unwrap(), &self.allowed_chars);
+            };
             
             ui.add_space(20.0);
             ui.horizontal(|ui| {
-                ui.checkbox(&mut self.allowed_chars.lower, "Lowercase");
-                ui.add_space(20.0);
-                ui.checkbox(&mut self.allowed_chars.upper, "Uppercase");
-            });
-
-            ui.horizontal(|ui| {
-                ui.checkbox(&mut self.allowed_chars.numbers, "Numbers");
-                ui.add_space(29.0);
-                ui.checkbox(&mut self.allowed_chars.special, "Special");
-            });
-
-            
-            ui.add_space(20.0);
-            ui.label( "Password");
-            selectable_text(ui, &mut self.password);
-            
-            //ui.add_space(20.0);
-            ui.horizontal(|ui| {
-                if ui.button("GENERATE PASSWORD").clicked() {
-                    self.password = crate::generate_password(self.password_length.try_into().unwrap(), &self.allowed_chars);
+                if ui.checkbox(&mut self.allowed_chars.lower, "Lowercase")
+                    .changed() {
+                        self.password = crate::generate_password(self.password_length.try_into().unwrap(), &self.allowed_chars);
                 };
-        
-                if ui.button("Copy to Clipboard").clicked() {
-                    ui.output_mut(|o| o.copied_text = self.password.to_string());
+
+                ui.add_space(50.0);
+
+                if ui.checkbox(&mut self.allowed_chars.upper, "Uppercase")
+                    .changed() {
+                        self.password = crate::generate_password(self.password_length.try_into().unwrap(), &self.allowed_chars);
                 };
             });
 
+            ui.horizontal(|ui| {
+                if ui.checkbox(&mut self.allowed_chars.numbers, "Numbers")
+                    .changed() {
+                        self.password = crate::generate_password(self.password_length.try_into().unwrap(), &self.allowed_chars);
+                };
 
-            ui.separator();
+                ui.add_space(59.0);
 
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/main/",
-                "Source code."
-            ));
+                if ui.checkbox(&mut self.allowed_chars.special, "Special Symbols")
+                    .changed() {
+                        self.password = crate::generate_password(self.password_length.try_into().unwrap(), &self.allowed_chars);
+                };
+            });
+        });
 
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
-                powered_by_egui_and_eframe(ui);
+         // Put your widgets into a `SidePanel`, `TopBottomPanel`, `CentralPanel`, `Window` or `Area`.
+        // For inspiration and more examples, go to https://emilk.github.io/egui
+        egui::TopBottomPanel::bottom("bot_panel").show(ctx, |ui| {
+            // The top panel is often a good place for a menu bar:
+            egui::menu::bar(ui, |ui| {
+                egui::widgets::global_dark_light_mode_buttons(ui);
+                //ui.add_space(20.0);
                 egui::warn_if_debug_build(ui);
+                ui.add_space(window_width - 210.0);
+                ui.add(egui::github_link_file!(
+                    "https://github.com/emilk/eframe_template/blob/main/",
+                    "Source code"
+                ));
             });
         });
     }
-}
-
-fn powered_by_egui_and_eframe(ui: &mut egui::Ui) {
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 0.0;
-        ui.label("Powered by ");
-        ui.hyperlink_to("egui", "https://github.com/emilk/egui");
-        ui.label(" and ");
-        ui.hyperlink_to(
-            "eframe",
-            "https://github.com/emilk/egui/tree/master/crates/eframe",
-        );
-        ui.label(".");
-    });
 }
